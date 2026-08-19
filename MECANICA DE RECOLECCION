@@ -1,0 +1,25 @@
+extends Node3D
+
+@export var velocidad: float = 3.5
+var objetivo: Node3D = null
+var siguiendo: bool = false
+var recolectada: bool = false
+
+func _ready():
+	add_to_group("piezas")
+	objetivo = get_tree().get_first_node_in_group("jugador")
+	$Area3D.body_entered.connect(_on_body_entered)
+
+func _on_body_entered(body):
+	if body.is_in_group("jugador") and not recolectada:
+		recolectada = true
+		siguiendo = false
+		if "piezas_acumuladas" in body:
+			body.piezas_acumuladas += 1
+		queue_free()
+
+func _process(delta):
+	if siguiendo and objetivo and not recolectada:
+		var posicion_destino = objetivo.global_position + Vector3(0, 1.0, 1.5)
+		global_position = global_position.lerp(posicion_destino, velocidad * delta)
+		look_at(objetivo.global_position, Vector3.UP)
