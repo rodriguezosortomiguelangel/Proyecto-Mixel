@@ -1,0 +1,48 @@
+extends Area3D
+
+@export var ventana_preguntas_node: NodePath
+
+@export_group("Configuración de la Pregunta")
+@export_multiline var pregunta_texto: String = "¿Qué componente se utiliza para controlar los motores paso a paso?"
+@export var opcion_a: String = "Driver L298N"
+@export var opcion_b: String = "Resistencia 220 ohm"
+@export var opcion_c: String = "Sensor Ultrasónico"
+@export_enum("Opción A (0)", "Opción B (1)", "Opción C (2)") var respuesta_correcta_index: int = 0
+
+var mision_completada: bool = false
+
+func _ready():
+	body_entered.connect(_on_body_entered)
+	body_exited.connect(_on_body_exited)
+
+func _on_body_entered(body):
+	if mision_completada:
+		return
+	if body.is_in_group("jugador") or body.name == "personaje" or body.name == "CharacterBody3D":
+		var ventana = get_node_or_null(ventana_preguntas_node)
+		if ventana:
+			if ventana.respuesta_correcta.is_connected(_al_responder_bien):
+				ventana.respuesta_correcta.disconnect(_al_responder_bien)
+			if ventana.respuesta_incorrecta.is_connected(_al_responder_mal):
+				ventana.respuesta_incorrecta.disconnect(_al_responder_mal)
+			ventana.respuesta_correcta.connect(_al_responder_bien)
+			ventana.respuesta_incorrecta.connect(_al_responder_mal)
+			ventana.mostrar_pregunta(
+				pregunta_texto,
+				[opcion_a, opcion_b, opcion_c],
+				respuesta_correcta_index
+			)
+
+func _on_body_exited(body):
+	if body.is_in_group("jugador") or body.name == "personaje" or body.name == "CharacterBody3D":
+		var ventana = get_node_or_null(ventana_preguntas_node)
+		if ventana and ventana.has_node("CanvasLayer"):
+			ventana.get_node("CanvasLayer").visible = false
+			Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+func _al_responder_bien():
+	print("¡Excelente! Respuesta correcta. Misión completada.")
+	mision_completada = true
+
+func _al_responder_mal():
+	print("Respuesta incorrecta. La mesa seguirá activa.")
