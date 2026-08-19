@@ -1,0 +1,14 @@
+extends Area3D
+
+@export_file("*.tscn") var escena_destino: String
+@export var nombre_materia: String = "Materia"
+
+func _ready():
+	body_entered.connect(_on_body_entered)
+
+func _on_body_entered(body):
+	if body.is_in_group("jugador") or body.name == "personaje" or body.name == "CharacterBody3D":
+		if escena_destino != "":
+			Datosdeljuego.mundo_destino = escena_destino
+			Datosdeljuego.materia_actual = nombre_materia
+			get_tree().call_deferred("change_scene_to_file", "res://pantalla_carga.tscn")
