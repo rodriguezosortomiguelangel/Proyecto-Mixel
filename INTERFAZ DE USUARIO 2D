@@ -1,0 +1,35 @@
+extends Control
+
+signal respuesta_correcta
+signal respuesta_incorrecta
+
+@onready var canvas_layer = $CanvasLayer
+@onready var label_pregunta = $CanvasLayer/Panel/VBoxContainer/LabelPregunta
+@onready var btn_a = $CanvasLayer/Panel/VBoxContainer/BotonOpcionA
+@onready var btn_b = $CanvasLayer/Panel/VBoxContainer/BotonOpcionB
+@onready var btn_c = $CanvasLayer/Panel/VBoxContainer/BotonOpcionC
+
+var opcion_correcta_index: int = 0
+
+func _ready():
+	canvas_layer.visible = false
+	btn_a.pressed.connect(_on_opcion_presionada.bind(0))
+	btn_b.pressed.connect(_on_opcion_presionada.bind(1))
+	btn_c.pressed.connect(_on_opcion_presionada.bind(2))
+
+func mostrar_pregunta(texto: String, opciones: Array, correcta_idx: int):
+	label_pregunta.text = texto
+	btn_a.text = opciones[0]
+	btn_b.text = opciones[1]
+	btn_c.text = opciones[2]
+	opcion_correcta_index = correcta_idx
+	canvas_layer.visible = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+func _on_opcion_presionada(indice: int):
+	canvas_layer.visible = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	if indice == opcion_correcta_index:
+		respuesta_correcta.emit()
+	else:
+		respuesta_incorrecta.emit()
